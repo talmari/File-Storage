@@ -83,7 +83,7 @@ public class FileController {
         return "editFile"; 
     }
 
-    //Map the POST requests to '/files/' for uploading a file
+    // Map the POST requests to '/files/' for uploading a file
     @PostMapping("/")
     public String uploadFile(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
         String fileName = fileStorageService.storeFile(file);
