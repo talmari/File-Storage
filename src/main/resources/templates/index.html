@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Simple File Storage</title>
+    <script type="text/javascript">
+        //adding java script code to better handle user interaction
+        //add event listeners to buttons once the page is fully loaded
+        document.addEventListener('DOMContentLoaded', (event) => {
+            //this function will be executed after the page is fully loaded
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    const filename = this.getAttribute('data-filename');
+                    //calls edit File function when clicked
+                    editFile(filename);
+                });
+            });
+        });
+
+        //function to handle the editing of a file
+        function editFile(filename) {
+            //get file content from server
+            fetch('/files/' + filename)
+                .then(response => response.text())
+                .then(data => {
+                    //Populate the text area with the file content
+                    document.getElementById('fileContent').value = data;
+                    document.getElementById('filename').value = filename;
+                })
+                .catch(error => console.error('Error fetching file content:', error));
+        }
+        
+        //function to handle the deleting of a file
+        function deleteFile(filename) {
+        if(confirm('Are you sure you want to delete ' + filename )) {
+            //send DELETE request to the server
+            fetch('/files/' + filename, { method: 'DELETE' })
+                .then(response => {
+                    if(response.ok) {
+                        //reload the page to update the file list
+                        window.location.reload(); 
+                    } else {                        
+                    }
+                })
+                .catch(error => console.error('Error deleting file:', error));
+            }
+        }
+
+    </script>
+</head>
+<body>
+
+    <!-- HTML formatting -->
+<h2>Uploaded Files:</h2>
+<ul>
+    <li th:each="fileName : ${fileNames}">
+        <a th:href="@{'/files/' + ${fileName}}" th:text="${fileName}">Download Link</a> |
+        <button type="button" class="edit-btn" th:data-filename="${fileName}">Edit</button>
+        <button type="button" class="delete-btn" th:data-filename="${fileName}" th:attr="onclick=|deleteFile('${fileName}');|">Delete</button>
+    </li>
+</ul>
+
+<h2>File Upload</h2>
+<form method="POST" action="/files/" enctype="multipart/form-data">
+    <input type="file" name="file" />
+    <button type="submit">Upload</button>
+</form>
+
+<h2>Edit File</h2>
+<form method="POST" action="/files/update" enctype="multipart/form-data">
+    <input type="hidden" id="filename" name="filename" value="" />
+    <textarea id="fileContent" name="content" rows="10" cols="30"></textarea>
+    <button type="submit">Save</button>
+</form>
+
+
+</body>
+</html>
